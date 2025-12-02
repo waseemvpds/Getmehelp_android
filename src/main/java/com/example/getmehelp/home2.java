@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -21,19 +22,18 @@ import androidx.appcompat.widget.Toolbar;
 public class home2 extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawer;
-    private String url; // To hold the url for logout
+    private String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home2);
 
-        // Get URL from SharedPreferences to pass it during logout
         SharedPreferences sh = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         url = sh.getString("url", "");
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // setSupportActionBar(toolbar);  // COMMENTED OUT - this was causing the crash
 
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -46,8 +46,7 @@ public class home2 extends AppCompatActivity implements NavigationView.OnNavigat
         toggle.syncState();
 
         if (savedInstanceState == null) {
-            // Set a default view when the activity is first created
-            // You can replace this with a default fragment if you have one
+            // Default initialization
         }
     }
 

@@ -84,7 +84,9 @@ public class login extends AppCompatActivity {
                                 public void onResponse(String response) {
                                     try {
                                         JSONObject jsonObj = new JSONObject(response);
-                                        if (jsonObj.getString("status").equalsIgnoreCase("ok")) {
+                                        String status = jsonObj.optString("status", "");
+
+                                        if (status.equalsIgnoreCase("ok")) {
                                             String lid = jsonObj.getString("lid");
                                             String type = jsonObj.getString("type");
 
@@ -95,22 +97,26 @@ public class login extends AppCompatActivity {
 
                                             Toast.makeText(getApplicationContext(), "Login Successful!", Toast.LENGTH_SHORT).show();
 
-                                            // The original code had a strict check for `type.equalsIgnoreCase(\"user\")`.
-                                            // This was a likely source of silent failure. We now navigate to the home
-                                            // screen on ANY successful login, which is more robust.
+                                            // Navigate to home2
                                             Intent i = new Intent(getApplicationContext(), home2.class);
                                             startActivity(i);
-                                            finish(); // Prevent user from going back to login screen
+
+                                            // Delay finish to ensure navigation completes
+                                            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                                                finish();
+                                            }, 500);
 
                                         } else {
-                                            Toast.makeText(getApplicationContext(), "Invalid username or password", Toast.LENGTH_LONG).show();
+                                            String message = jsonObj.optString("message", "Invalid username or password");
+                                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                                         }
                                     } catch (Exception e) {
-                                        Toast.makeText(getApplicationContext(), "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             },
-                            new Response.ErrorListener() {
+
+                    new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
                                     Toast.makeText(getApplicationContext(), "Login failed: " + error.toString(), Toast.LENGTH_SHORT).show();

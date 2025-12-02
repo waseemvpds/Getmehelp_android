@@ -24,14 +24,10 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class Chat2 extends AppCompatActivity {
-
-
 
     MessagesAdapter adapterMessages;
     ListView listMessages;
@@ -39,226 +35,145 @@ public class Chat2 extends AppCompatActivity {
     EditText edtxttosent;
     Handler hnd;
     Runnable ad;
-    String url,lid,toid,cname;
+    String url, lid, toid, cname;
     SharedPreferences sh;
-    String lastid,hu="",lastidd="";
+    String lastid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        hnd=new Handler();
-        listMessages= (ListView)findViewById(R.id.list_chat);
-        bt1= (Button) findViewById(R.id.button_chat_send);
+        hnd = new Handler();
+        listMessages = findViewById(R.id.list_chat);
+        bt1 = findViewById(R.id.button_chat_send);
         adapterMessages = new MessagesAdapter(Chat2.this);
-        edtxttosent=(EditText)findViewById(R.id.input_chat_message);
+        edtxttosent = findViewById(R.id.input_chat_message);
         listMessages.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         listMessages.setStackFromBottom(true);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        sh=PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
-        lastid= sh.getString("lastid", "0");
-//        toid=custom_view_expert.expid[custom_view_expert.posi];
-
-
-//        Toast.makeText( this, ""+sh.getString("lastid", "0"), Toast.LENGTH_SHORT ).show();
-//        cname=sh.getString("pname1", "");
-//        hu = sh.getString( "ip", "" );
-
-
-
+        sh = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        lastid = sh.getString("lastid", "0");
+        url = sh.getString("url", "");
 
         bt1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-
-                final String msggg=edtxttosent.getText().toString();
-                if(msggg.equalsIgnoreCase(""))
-                {
-                    edtxttosent.setError("enter message");
+                final String msggg = edtxttosent.getText().toString();
+                if (msggg.isEmpty()) {
+                    edtxttosent.setError("Enter message");
+                    return;
                 }
-                else {
 
+                String chatUrl = url + "/mech_add_chat";
 
-//                    String url = "http://" + hu + ":8000/add_chat";
-                    String url= sh.getString("url","")+"/mech_add_chat";
-
-
-                    RequestQueue requestQueue = Volley.newRequestQueue( getApplicationContext() );
-                    StringRequest postRequest = new StringRequest( Request.Method.POST, url,
-                            new Response.Listener<String>() {
-                                @Override
-                                public void onResponse(String response) {
-//                            Toast.makeText( getApplicationContext(), response, Toast.LENGTH_LONG ).show();
-
-                                    // response
-                                    try {
-                                        JSONObject jsonObj = new JSONObject( response );
-                                        if (jsonObj.getString( "status" ).equalsIgnoreCase( "Inserted" )) {
-
-//                                            startActivity( new Intent( getApplicationContext(), Usersuggestion.class ) );
-                                            edtxttosent.setText( "" );
-                                        }
-
-
-                                        // }
-                                        else {
-                                            Toast.makeText( getApplicationContext(), "Not found", Toast.LENGTH_LONG ).show();
-                                        }
-
-                                    } catch (Exception e) {
-                                        Toast.makeText( getApplicationContext(), "Error" + e.getMessage().toString(), Toast.LENGTH_SHORT ).show();
-                                    }
-                                }
-                            },
-                            new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    // error
-                                    Toast.makeText( getApplicationContext(), "eeeee" + error.toString(), Toast.LENGTH_SHORT ).show();
-                                }
-                            }
-                    ) {
-                        @Override
-                        protected Map<String, String> getParams() {
-                            SharedPreferences sh = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
-                            Map<String, String> params = new HashMap<String, String>();
-
-                            String id = sh.getString( "lid", "" );
-//                            params.put( "lid", id );
-//                            params.put( "toid", toid );
-                            params.put( "mid", sh.getString("mid","") );
-                            params.put( "lid", sh.getString("lid","") );
-                            params.put( "message", msggg );
-
-//                params.put("mac",maclis);
-
-                            return params;
-                        }
-                    };
-
-                    int MY_SOCKET_TIMEOUT_MS = 100000;
-
-                    postRequest.setRetryPolicy( new DefaultRetryPolicy(
-                            MY_SOCKET_TIMEOUT_MS,
-                            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT ) );
-                    requestQueue.add( postRequest );
-
-
-
-                }
-            }
-        });
-
-        ad=new Runnable() {
-            @Override
-            public void run() {
-
-//                String chatURL = "http://" + hu + ":3000/view_chat";
-                String chatURL= sh.getString("url","")+"/mech_view_chat";
-
-                SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd hh:MM:ss" );
-                RequestQueue requestQueue = Volley.newRequestQueue( getApplicationContext() );
-                StringRequest postRequest = new StringRequest( Request.Method.POST, chatURL,
+                RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+                StringRequest postRequest = new StringRequest(Request.Method.POST, chatUrl,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-//                                Toast.makeText( getApplicationContext(), response, Toast.LENGTH_LONG ).show();
-
-                                // response
                                 try {
-                                    JSONObject jsonObj = new JSONObject( response );
-                                    if (jsonObj.getString( "status" ).equalsIgnoreCase( "ok" )) {
-                                        JSONArray jss = jsonObj.getJSONArray( "data" );//from python
-
-                                        for (int i = 0; i < jss.length(); i++) {
-
-                                            JSONObject js = jss.getJSONObject( i );
-                                            ChatMessage message = new ChatMessage();
-                                            message.setMessage( js.getString( "chat" ) );//dbcolumnname
-                                            String dt = js.getString( "date" );
-                                            String sid = js.getString( "userid" );
-                                            message.setDate( dt );
-                                            if (js.getString( "sid" ).equalsIgnoreCase("user")) {
-                                                message.setUsername( "Me" );//text
-//                                                Toast.makeText( Chat.this, "kkkkk", Toast.LENGTH_SHORT ).show();
-                                                message.setIncomingMessage( false );
-                                            } else {
-//                                                message.setUsername( custom_view_expert.cname[custom_view_expert.posi] );
-                                                message.setIncomingMessage( true );
-                                            }
-                                            adapterMessages.add( message );
-                                            lastid = js.getString( "id" );
-                                        }
-                                        listMessages.setAdapter( adapterMessages );
-                                        SharedPreferences.Editor edt = sh.edit();
-                                        edt.putString( "lastid", lastid );
-                                        edt.commit();
-
-
-                                        hnd.postDelayed( ad, 5000 );
+                                    JSONObject jsonObj = new JSONObject(response);
+                                    if (jsonObj.getString("status").equalsIgnoreCase("Inserted")) {
+                                        edtxttosent.setText("");
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "Failed to send message", Toast.LENGTH_LONG).show();
                                     }
-
-
-                                    // }
-                                    else {
-                                        Toast.makeText( getApplicationContext(), "Not found", Toast.LENGTH_LONG ).show();
-                                    }
-
                                 } catch (Exception e) {
-                                    Toast.makeText( getApplicationContext(), "Error" + e.getMessage().toString(), Toast.LENGTH_SHORT ).show();
+                                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                // error
-                                Toast.makeText( getApplicationContext(), "eeeee" + error.toString(), Toast.LENGTH_SHORT ).show();
+                                Toast.makeText(getApplicationContext(), "Request failed: " + error.toString(), Toast.LENGTH_SHORT).show();
                             }
                         }
                 ) {
                     @Override
                     protected Map<String, String> getParams() {
-                        SharedPreferences sh = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
-                        Map<String, String> params = new HashMap<String, String>();
-
-//                        String id = sh.getString( "lid", "" );
-//                        params.put( "lid", id );
-//                        params.put( "toid", toid);
-                        params.put( "lastid", lastid );
-                        params.put( "mid", sh.getString("mid","") );
-                        params.put( "lid", sh.getString("lid","") );
-
+                        Map<String, String> params = new HashMap<>();
+                        params.put("mid", sh.getString("mid", ""));
+                        params.put("lid", sh.getString("lid", ""));
+                        params.put("message", msggg);
                         return params;
                     }
                 };
-                int MY_SOCKET_TIMEOUT_MS=100000;
 
-                postRequest.setRetryPolicy(new DefaultRetryPolicy(
-                        MY_SOCKET_TIMEOUT_MS,
-                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                postRequest.setRetryPolicy(new DefaultRetryPolicy(100000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                 requestQueue.add(postRequest);
-
             }
+        });
 
+        ad = new Runnable() {
+            @Override
+            public void run() {
+                String chatUrl = url + "/mech_view_chat";
+
+                RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+                StringRequest postRequest = new StringRequest(Request.Method.POST, chatUrl,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                try {
+                                    JSONObject jsonObj = new JSONObject(response);
+                                    if (jsonObj.getString("status").equalsIgnoreCase("ok")) {
+                                        JSONArray jss = jsonObj.getJSONArray("data");
+                                        for (int i = 0; i < jss.length(); i++) {
+                                            JSONObject js = jss.getJSONObject(i);
+                                            ChatMessage message = new ChatMessage();
+                                            message.setMessage(js.getString("chat"));
+                                            message.setDate(js.getString("date"));
+
+                                            if (js.getString("sid").equalsIgnoreCase(sh.getString("lid", ""))) {
+                                                message.setUsername("Me");
+                                                message.setIncomingMessage(false);
+                                            } else {
+                                                message.setUsername("Other"); // Or get the other user's name
+                                                message.setIncomingMessage(true);
+                                            }
+                                            adapterMessages.add(message);
+                                            lastid = js.getString("id");
+                                        }
+                                        listMessages.setAdapter(adapterMessages);
+                                        SharedPreferences.Editor edt = sh.edit();
+                                        edt.putString("lastid", lastid);
+                                        edt.apply();
+                                    }
+                                } catch (Exception e) {
+                                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                                hnd.postDelayed(ad, 5000);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(getApplicationContext(), "Request failed: " + error.toString(), Toast.LENGTH_SHORT).show();
+                                hnd.postDelayed(ad, 5000); // Retry after 5 seconds on error
+                            }
+                        }
+                ) {
+                    @Override
+                    protected Map<String, String> getParams() {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("lastid", lastid);
+                        params.put("mid", sh.getString("mid", ""));
+                        params.put("lid", sh.getString("lid", ""));
+                        return params;
+                    }
+                };
+                requestQueue.add(postRequest);
+            }
         };
-        hnd.post( ad );
-
-
-
+        hnd.post(ad);
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        SharedPreferences.Editor ed=sh.edit();
-        ed.putString( "lastid","0" );
-        ed.commit();
-        hnd.removeCallbacks( ad );
-//        startActivity( new Intent( Chat.this,view_expert.class ) );
+        hnd.removeCallbacks(ad);
     }
 }
